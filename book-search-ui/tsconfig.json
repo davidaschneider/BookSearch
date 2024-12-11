@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+      "target": "esnext",
+      "baseUrl": "./src",
+      "rootDir": "./src",
+      "module": "CommonJS",
+      "resolveJsonModule": true,
+      "experimentalDecorators": true,
+      "jsx": "react",
+      "esModuleInterop": true,
+      "strictNullChecks": true,
+      "typeRoots": [ "./src/@types", "./node_modules/@types"]
+    }
+  }

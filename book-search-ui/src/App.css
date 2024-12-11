@@ -1,0 +1,81 @@
+body {
+  background-color: aliceblue;
+}
+
+.component-book-search {
+  margin: 1em;
+  max-width: 1000px;
+
+  .top-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    .branding {
+      display:flex;
+      flex-direction: column;
+      align-items: center;
+      
+      img {
+        width: 30%;
+      }
+      .label {
+        font-family: fantasy;
+        font-size: 250%;
+        padding-top: .5em;
+      }
+    }
+
+    .search-bar {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+
+    #search {
+      max-width: 40em;
+    }
+  }
+
+  .lighter {
+    color: #888
+  }
+
+  .search-results {
+    padding-left: 1em;
+    padding-top: 1em;
+
+    .error {
+      background-color: lightpink;
+      width: 100%;
+      border: darkred solid 1px;
+      border-radius: 5px;
+      padding: .5em;
+    }
+
+    .component-book {
+      margin: 1.5em 0;
+      display: flex;
+
+      .title {
+        font-size: larger;
+        font-family: sans-serif;
+      }
+
+      .author {}
+
+      .cover {
+        min-height: 60px;
+        min-width: 50px;
+        margin-right: 1em;
+        display: flex;
+        align-content: center;
+        flex-wrap: wrap;
+
+        img {
+          width: 50px;
+        }
+      }
+    }
+  }
+}
