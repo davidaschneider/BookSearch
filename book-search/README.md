@@ -7,7 +7,9 @@ Make sure ollama is running.  Install from https://ollama.com/download and then 
 
 Working from the directory where this file is located:
 
-    source /venv/bin/activate
+    source ./venv/bin/activate
+    pip install flask aiohttp flask_mail requests ollama
+
     export FLASK_DEBUG=1        # OPTIONAL adds debugging into the flask logs
     flask run --port 5000
 

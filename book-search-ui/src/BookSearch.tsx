@@ -9,12 +9,15 @@ import { Form, InputGroup } from 'react-bootstrap';
 //internal
 import Book from 'Book';
 import { bookSearch, isbnLookup } from 'api';
-import { BookData, LOADING } from 'types';
+import { SummaryStatus, BookData } from 'types';
+import pLimit from 'p-limit';
 
 
 type BookSearchProps = {
 	storeName: string,
-	applicationImage: string
+	applicationImage: string,
+	//The default number of simultaneous processs that will run to retrieve summaries.
+	summaryPlimit: number,
 }
 
 type status = 'loading' | 'done' | 'fresh'
@@ -22,12 +25,14 @@ type status = 'loading' | 'done' | 'fresh'
 @observer class BookSearch extends React.Component<BookSearchProps> {
 	static defaultProps = {
 		storeName: "Book City",
-		applicationImage: 'assets/book-city.jpg'
+		applicationImage: 'assets/book-city.jpg',
+		summaryPlimit: 2
 	}
 
 	constructor(props: BookSearchProps) {
 		super(props);
 		makeObservable(this);
+		this.summaryLimit = pLimit(props.summaryPlimit)
 	}
 
 	componentDidMount() {
@@ -36,11 +41,15 @@ type status = 'loading' | 'done' | 'fresh'
 
 	@observable searchText: string = ""
 	@action setSearchText = (e: ChangeEvent<HTMLInputElement>) => { this.searchText = e.target.value }
-	@observable books: Array<BookData> = []
+	// An array of book IDs (isbn numbers) in the search result order.
+	@observable bookIds: Array<string> = []
+	@observable booksByISBN: {[key:string]: BookData} = {}
 	@observable currentStatus: status = 'fresh'
 	totalAvailable: number
 	page:number = 0
-	searchError: string = ''
+	@observable searchError: string = ''
+	// a p-limit used for throttling the calls to get summaries.
+	summaryLimit: pLimit.Limit
 
 	handleKeyDown = (e) => {
 		if (e.key == 'Enter') {
@@ -61,7 +70,8 @@ type status = 'loading' | 'done' | 'fresh'
 							<InputGroup id='search'>
 								<Form.Control placeholder='Enter a book title'
 									onChange={this.setSearchText} value={this.searchText}/>
-								<Button disabled={this.currentStatus == 'loading' || !this.searchText} onClick={this.performSearch}>Search</Button>
+								<LoadingButton  loading={this.currentStatus == 'loading'}   disabled={this.currentStatus == 'loading' || !this.searchText} onClick={this.performSearch}>Search
+								</LoadingButton>
 							</InputGroup>
 						</div>
 					</div>
@@ -69,16 +79,17 @@ type status = 'loading' | 'done' | 'fresh'
 						{this.searchError &&
 						<div className='error'>{this.searchError}</div>}
 						{this.currentStatus == 'done' && this.totalAvailable &&
-						 <div className='count'>Showing {this.books.length} of {this.totalAvailable} total results</div>}
+						 <div className='count'>Showing {this.bookIds.length} of {this.totalAvailable} total results</div>}
 
-						{this.books.map((b, i) => <Book {...b} key={b.isbn ?? i} />	)}
+						{this.bookIds.map((id, i) => <Book onExtend={() => this.booksByISBN[id].shortened = false} {...this.booksByISBN[id]} key={id} />	)}
+						{/* {this.books.map((b, i) => <Book {...this.booksByISBN[String(b)]} key={b ?? i} />	)} */}
 
-						{this.currentStatus != 'fresh' && this.totalAvailable > this.books.length &&
-						<Button disabled={this.currentStatus == 'loading'} onClick={this.getMore}>
+						{this.currentStatus != 'fresh' && this.totalAvailable > this.bookIds.length &&
+						<LoadingButton loading={this.currentStatus == 'loading'} disabled={this.currentStatus == 'loading'} onClick={this.getMore}>
 							Get More
-						</Button>}
+						</LoadingButton>}
 					</div>
-					{this.currentStatus == 'done' && this.books.length === 0 ?
+					{this.currentStatus == 'done' && this.bookIds.length === 0 ?
 					<div>No Results Available</div> :
 					null}
 				</div>
@@ -95,44 +106,90 @@ type status = 'loading' | 'done' | 'fresh'
 		this.doSearch()
 	}
 
-	@action doSearch = async() => {
+	@action doSearch = async () => {
 		this.currentStatus = 'loading'
 		try {
-			let {books, total_available} = await bookSearch(this.searchText, this.page)
+			let { books, total_available } = await bookSearch(this.searchText, this.page)
 			this.currentStatus = 'done'
 			this.totalAvailable = total_available
-			this.books.push(...books.map(b => {
-				return {
-					...b,
-					cover_url: b.cover_url ?? LOADING,
-					summary: b.summary ?? LOADING
-				}
-			}))
-			this.books.forEach(async (b, i) => {
-				try {
-					if (!b.isbn) {
-						throw new Error("No ISBN number")
-					} else if (this.books[i].isbn == b.isbn && !b.fully_enriched) {
-						this.books[i] = await isbnLookup(b.isbn)
-					}
-				} catch (e) {
-					this.books[i].summary = <div className='lighter'>Summary Unavailable</div>
-				}
-			})
+			let newBooks = books.filter(b => b.isbn)
+								.map(b => {
+										return {
+											...b,
+											cover_url: b.cover_url ?? '',
+											summary: b.summary ?? '' as string,
+											summaryStatus : !b.summary ? 'loading' as SummaryStatus : null,
+											shortened: true,
+										}
+									})
+								
+			newBooks.forEach(b => {
+						this.bookIds.push(b.isbn as string)
+						this.booksByISBN[String(b.isbn)] = b
+					})
+			this.getSummaries(newBooks)
+			this.fetchSummaries(newBooks)
 		} catch (e) {
 			this.searchError = "An error was encountered during the search."
 			console.warn(e)
 		} finally {
 			this.currentStatus = 'done'
-		}	
+		}
+	}
+
+
+	@action getSummaries = (books: Array<BookData>) => {
+		isbnLookup(books.filter(b => !b.cover_url)
+						.map((b) => b.isbn as string), ['cover_url']).then(books => {
+								books.forEach(b => this.booksByISBN[b.isbn ?? ''].cover_url = b.cover_url ?? '')
+							})
+	}
+
+	@action fetchSummaries = (books: Array<BookData>) => {
+		books.filter(b => !b.summary && (!b.summaryStatus || b.summaryStatus == 'loading'))
+			 .forEach((b) => {
+				this.summaryLimit(async () => {
+					try {
+						if (!b.isbn) {
+							throw new Error("No ISBN number")
+						} else {
+							this.booksByISBN[b.isbn].summaryStatus = 'generating'
+							let res = await isbnLookup([b.isbn], ['summary'])
+							this.booksByISBN[b.isbn].summary = res[0].summary
+						}
+					} catch (e) {
+						if (b.isbn) { this.booksByISBN[b.isbn].summary = 'unavailable' }
+					} finally {
+						if (b.isbn) { this.booksByISBN[b.isbn].summaryStatus = null }
+					}
+				})
+			})
 	}
 
 	@action reset = () => {
-		this.books.length = 0
+		this.bookIds.length = 0
+		for (const key in this.booksByISBN) {
+			delete this.booksByISBN[key]
+		}
 		this.totalAvailable = 0;
 		this.page = 1
 		this.searchError = ''
 	}
+}
+
+/**
+ * A new type of button that adds a 'loading' prop to the standard bootstrap button.  
+ * If that prop is truthy, a loading spinner will be shown inside the button
+ */
+const LoadingButton = props => {
+	const {loading, ...attrs} = props
+	return (
+		<Button {...attrs}>{props.children}
+			<span className='loading-container'>
+				{props.loading ? <img src={require('assets/spinner.svg').default} alt='Loading'/> : null}
+			</span>
+		</Button>
+	)
 }
 
 export default BookSearch;

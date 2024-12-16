@@ -11,9 +11,10 @@ app.config['SEND_FILE_MAX_AGE_DEFAULT'] = 3600
 
 from app import routes
 
-print("Initializing the app in " + __name__)
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
+
+
 mail = Mail(app)
 if not app.debug:
     if app.config['MAIL_SERVER']:

@@ -1,17 +1,19 @@
 //external
-import React, { ReactNode } from 'react';
+import React from 'react';
 import { computed, makeObservable } from 'mobx';
 import { observer } from 'mobx-react';
+import { SummaryStatus } from 'types';
 
 //internal
-import { LOADING } from 'types';
-
 
 type BookProps = {
     title: string,
     cover_url: string | null,
     authors: Array<string>,
-    summary: string | null | ReactNode
+    summary: string | null ,
+    summaryStatus:  SummaryStatus,
+    onExtend: () => void,
+    shortened?: boolean,
 }
 
 @observer class Book extends React.Component<BookProps> {
@@ -32,7 +34,7 @@ type BookProps = {
 		return (
 			<div className="component-book">
                 <div className='cover'>
-                    {this.props.cover_url && this.props.cover_url != LOADING ?
+                    {this.props.cover_url ?
                         <img className='cover-img' src={this.props.cover_url}></img> :
                         null
                     }
@@ -45,12 +47,16 @@ type BookProps = {
                         </div> : 
                         null}
 
-                    <div className='summary'>
-
-                    {(this.props.summary && this.props.summary != LOADING) ?
-                     this.props.summary : 
-                     (this.props.summary == LOADING) ?
-                     <div className='lighter'>Loading Summary...</div> : null}
+                    <div className={`summary ${this.props.shortened ? 'shortened block-ellipsis' : ''}`}>
+                    {
+                     this.props.summary ? 
+                     <div onClick={this.props.onExtend}>{this.props.summary}</div> : 
+                     (this.props.summaryStatus == 'generating') ?
+                     <div className='lighter'>Whipping up a summary...</div> :
+                     (this.props.summaryStatus == 'loading') ?
+                     <div className='lighter'>Waiting for Summary...</div> : 
+                     (this.props.summaryStatus == 'unavailable') ?
+                     <div className='lighter'>Summary Unavailable.</div> : null}
                     </div>
                 </div>
             </div>

@@ -1,5 +1,7 @@
 import { ReactNode } from "react";
 
+export type SummaryStatus = 'loading' | 'generating' | 'unavailable' | null
+
 export type BookData = {
 	authors: Array<string>,
 	title: string,
@@ -10,12 +12,12 @@ export type BookData = {
 	 */
 	isbn: string | null,
 	publish_year: string | null,
-	summary: string | ReactNode | null,
+	summary: string | null,
 	/** 
 	 * If true, it is assumed that no calls will ever be needed to have the server
 	 * gather more information, since any and all supplemental information has already been added.
 	 */
 	fully_enriched: boolean,
+	summaryStatus: SummaryStatus,
+	shortened: boolean,
 }
-
-export const LOADING = "**Loading**"

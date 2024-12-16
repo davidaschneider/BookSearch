@@ -1,3 +1,5 @@
+from threading import Lock
+from cachetools import LRUCache, cached
 import requests
 import asyncio
 from aiohttp import ClientSession
@@ -6,6 +8,7 @@ from flask import current_app as app
 from app.book import Book
 from config import Config
 
+@cached(cache=LRUCache(maxsize=1024, getsizeof=len), info=True, lock=Lock())
 def search(title, page = 1, limit = Config.BOOKS_PER_PAGE): 
     fields = ['author_name', 'format', 'isbn', 'first_publish_year','title', 'first_sentence']
     headers = {'Content-Type': 'application/json'}

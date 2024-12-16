@@ -54,7 +54,7 @@ class Book:
             self.cover_url = fields[0]
         if fields[1] != None: #this could overwrite, but that's OK. This value should be as good as the previous one.
             self.summary = fields[1]
-        self.fully_enriched = len(fields) == 2
+        self.fully_enriched = len(fields) == 2 or (self.summary and self.cover_url)
 
     async def gather_fields_async(self, fields: list[str]) :
         tasks = []
@@ -76,6 +76,21 @@ class Book:
     def get_by_isbn(cls, isbn):
         result = cls.books_by_isbn[isbn] if isbn in Book.books_by_isbn else None
         return result
+
+def enrich_fields_books(books: list[Book], fields: list[str]):
+    '''Enrich all elements of books with the relevant fields.  Note that the will all run simultaneously,
+       so if they're not I/O bound, you might have to wait a long time to get any answers.  For non-I/O bound
+       tasks like generating summaries, it's better to send them one at a time, so they can return as soon
+       as each individual task is completed.'''
+    asyncio.run(enrich_fields_books_async(books, fields))
+
+async def enrich_fields_books_async(books, fields):
+
+    async with asyncio.TaskGroup () as tg:
+        for book in books:
+            tg.create_task(book.enrich_fields_async(fields))
+    return books
+
 
 
 

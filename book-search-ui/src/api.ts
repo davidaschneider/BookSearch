@@ -10,8 +10,8 @@ export const bookSearch = async (searchText: string, page:number = 1): Promise<{
 	return await resp.json();
 }
 
-export const isbnLookup = async (isbn: string): Promise<BookData> => {
-	let url = `book?isbn=${isbn}`
+export const isbnLookup = async (isbn: string[], fields: string[] = []): Promise<Array<BookData>> => {
+	let url = `book?isbn=${JSON.stringify(isbn)}&fields=${JSON.stringify(fields)}`
 	const resp = await fetch(url);
 	if (!resp.ok) {
 		console.log("No data from from ISBN " + isbn)
