@@ -82,7 +82,6 @@ type status = 'loading' | 'done' | 'fresh'
 						 <div className='count'>Showing {this.bookIds.length} of {this.totalAvailable} total results</div>}
 
 						{this.bookIds.map((id, i) => <Book onExtend={() => this.booksByISBN[id].shortened = false} {...this.booksByISBN[id]} key={id} />	)}
-						{/* {this.books.map((b, i) => <Book {...this.booksByISBN[String(b)]} key={b ?? i} />	)} */}
 
 						{this.currentStatus != 'fresh' && this.totalAvailable > this.bookIds.length &&
 						<LoadingButton loading={this.currentStatus == 'loading'} disabled={this.currentStatus == 'loading'} onClick={this.getMore}>

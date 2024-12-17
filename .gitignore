@@ -13,6 +13,7 @@ node_modules
 /book-search/static
 /book-search/app/static
 /book-search/venv/lib
+/book-search-fastapi/static
 
 # misc
 .DS_Store

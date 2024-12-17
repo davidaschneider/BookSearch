@@ -11,7 +11,9 @@ export const bookSearch = async (searchText: string, page:number = 1): Promise<{
 }
 
 export const isbnLookup = async (isbn: string[], fields: string[] = []): Promise<Array<BookData>> => {
-	let url = `book?isbn=${JSON.stringify(isbn)}&fields=${JSON.stringify(fields)}`
+	const isbnStr = isbn.map(i => `isbn=${i}`).join("&")
+	const fieldsStr = fields.map(f => `field=${f}`).join('&')
+	let url = `book?${isbnStr}&${fieldsStr}`
 	const resp = await fetch(url);
 	if (!resp.ok) {
 		console.log("No data from from ISBN " + isbn)

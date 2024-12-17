@@ -3,8 +3,8 @@
   "description": "A UI to search the OpenLibrary",
   "version": "1.0.0",
   "scripts": {
-    "build": "react-scripts build && mkdir build/assets && cp assets/* build/assets/ && rm -rf ../book-search/app/static/static/js/main* && rm -rf ../book-search/app/static/static/css/main* && cp -r build/* ../book-search/app/static/",
-    "build:dev": "dotenv -e .env.development react-scripts build && rm -rf ../book-search/app/static/static/js/main* && rm -rf ../book-search/app/static/static/css/main* && cp -r build/* ../book-search/app/static/"
+    "build": "react-scripts build && mkdir build/assets && cp assets/* build/assets/ && rm -rf ../book-search/app/static/static/js/main* && rm -rf ../book-search/app/static/static/css/main* && cp -r build/* ../book-search/app/static/ && cp -r build/* ../book-search-fastapi/static/",
+    "build:dev": "dotenv -e .env.development react-scripts build && rm -rf ../book-search/app/static/static/js/main* && rm -rf ../book-search/app/static/static/css/main* && cp -r build/* ../book-search-fastapi/static/"
   },
   "dependencies": {
     "bootstrap": "^5.3.3",
