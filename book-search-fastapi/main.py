@@ -3,6 +3,7 @@ from typing import Annotated
 from fastapi import FastAPI, Query
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from book import Book, add_covers_to_books, enrich_fields_books_async
 from pydantic_settings import BaseSettings
 
@@ -10,10 +11,24 @@ import book_api
 
 class Settings(BaseSettings):
     books_per_page: int = 10
-    model: str = 'llama3.2'
+    model: str = 'gpt-4o-mini'
+#    model: str = 'llama3.2'
 
 settings = Settings()
 app = FastAPI()
+
+# useful when the UI is being run by vite on 5173.
+origins = ['http://localhost:5173',
+           'http://127.0.01:5173']
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=['*'],
+    allow_headers=['*']
+)
+
 
 @app.get("/search")
 def search(title: str =Query ('', description="Search query, which is assumed to be part of the title."), 

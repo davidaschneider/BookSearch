@@ -1,0 +1,5 @@
+openai
+fastapi[standard]
+aiohttp 
+requests 
+ollama
