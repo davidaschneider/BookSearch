@@ -9,11 +9,12 @@ export OPENAI_API_KEY="MY_KEY_GOES_HERE"
 Working from the directory where this file is located:
 
     # If you haven't already created a venv for this:
-    python -m venv .
+    python -m venv venv
+    source ./venv/bin/activate
     pip install -r requirements.txt
 
     * Or, if you already have a venv for this project:
-    ./venv/bin/activate
+    source ./venv/bin/activate
 
     # in either case, get it running
     fastapi dev main.py

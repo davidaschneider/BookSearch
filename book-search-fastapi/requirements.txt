@@ -3,3 +3,4 @@ fastapi[standard]
 aiohttp 
 requests 
 ollama
+pydantic-settings

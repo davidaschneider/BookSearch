@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 settings = Settings()
 app = FastAPI()
 
-# useful when the UI is being run by vite on 5173.
+# useful when the UI is being run by vite on 5173, which is not yet committed.
 origins = ['http://localhost:5173',
            'http://127.0.01:5173']
 
