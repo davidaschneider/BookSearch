@@ -8,6 +8,7 @@ export OPENAI_API_KEY="MY_KEY_GOES_HERE"
 
 Working from the directory where this file is located:
 
+    # This is known to work with python 3.12, and known to not work with python 3.9.  Recommended to use >= 3.12
     # If you haven't already created a venv for this:
     python -m venv venv
     source ./venv/bin/activate
@@ -17,7 +18,10 @@ Working from the directory where this file is located:
     source ./venv/bin/activate
 
     # in either case, get it running
-    fastapi dev main.py
+    fastapi run main.py
+
+    # to run in dev mode with all interfaces bound (not just localhost), call
+    fastapi dev main.py --host 0.0.0.0
 
 Go here to test it out
 
