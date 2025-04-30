@@ -1,3 +1,17 @@
+# Building the BookSearch UI
+
+This is intended to be built within the context of the entire BookSearch repo. It can be built with either
+
+### `npm run build`
+
+or
+
+### `npm run build:dev`
+
+In either case, it will build the React app and then copy it into `book-search-fastapi/static` where it will be served up by the fastapi server.
+
+What follows below this is the original README produced by create-react-app.
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
